@@ -1,0 +1,89 @@
+import os
+import json
+
+# Define the Transaction class
+class Transaction:
+    def __init__(self, category, amount, description):
+        self.category = category
+        self.amount = amount
+        self.description = description
+
+    def to_dict(self):
+        return {
+            "category": self.category,
+            "amount": self.amount,
+            "description": self.description
+        }
+
+    @staticmethod
+    def from_dict(data):
+        return Transaction(data["category"], data["amount"], data["description"])
+
+# Functions
+def add_transaction(transactions):
+    category = input("Enter category (e.g., food, rent, salary): ")
+    amount = float(input("Enter amount (positive for income, negative for expense): "))
+    description = input("Enter description: ")
+    transaction = Transaction(category, amount, description)
+    transactions.append(transaction)
+    print("Transaction added successfully!")
+
+def display_transactions(transactions):
+    if not transactions:
+        print("No transactions recorded yet.")
+        return
+
+    print("\nTransactions:")
+    for idx, transaction in enumerate(transactions, start=1):
+        print(f"{idx}. [{transaction.category}] ${transaction.amount:.2f} - {transaction.description}")
+
+def summarize_transactions(transactions):
+    total_income = sum(t.amount for t in transactions if t.amount > 0)
+    total_expense = sum(t.amount for t in transactions if t.amount < 0)
+    balance = total_income + total_expense
+
+    print("\nSummary Report:")
+    print(f"Total Income: ${total_income:.2f}")
+    print(f"Total Expenses: ${-total_expense:.2f}")
+    print(f"Balance: ${balance:.2f}")
+
+def save_to_file(transactions, filename="transactions.json"):
+    with open(filename, "w") as file:
+        json_data = [t.to_dict() for t in transactions]
+        json.dump(json_data, file)
+    print("Transactions saved to file.")
+
+def load_from_file(filename="transactions.json"):
+    if not os.path.exists(filename):
+        return []
+    with open(filename, "r") as file:
+        json_data = json.load(file)
+        return [Transaction.from_dict(data) for data in json_data]
+
+# Main program
+def main():
+    transactions = load_from_file()
+
+    while True:
+        print("\nPersonal Finance Tracker")
+        print("1. Add Transaction")
+        print("2. Display Transactions")
+        print("3. Summarize Transactions")
+        print("4. Save and Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            add_transaction(transactions)
+        elif choice == "2":
+            display_transactions(transactions)
+        elif choice == "3":
+            summarize_transactions(transactions)
+        elif choice == "4":
+            save_to_file(transactions)
+            print("Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
